@@ -1,0 +1,607 @@
+---
+title: "test"
+author: "Zhaofeng Tong"
+date: "2018/6/4"
+output: html_document
+---
+
+```{r}
+#load("/Users/KexinXu/Desktop/101 project.RData")
+test <- read_csv("~/Desktop/101C project/test.csv")
+project <- read_csv("~/Desktop/101C project/test.csv")
+
+#factorize
+test <- test[,c(6,7,10)]
+
+```
+
+```{r}
+#recode for OfficerGender
+recodegender <- function(x){
+  x <- gsub("MALE","M",x)
+  x <- gsub("FEMALE|W","F",x)
+  x <- gsub("Unknown","U",x)
+  x <- gsub(";", "", x)
+  if(lengths(regmatches(x, gregexpr("M", x)))>=length(x)/2){
+    x <- "M"
+  }else if(lengths(regmatches(x, gregexpr("F", x)))>=length(x)/2){
+    x <- "F"
+  }else{
+    x <- "U"
+  }
+  return(x)
+}
+x<- c()
+for(i in 1:1400){
+ x <- c(x,recodegender(test$OfficerGender[i]))
+}
+test$OfficerGender <- x
+```
+
+```{r}
+#recode for NumberOfShots
+recodeshots <- function(x){
+  x <- gsub(">/=| |total|","",x)
+  x <- gsub("*","",x)
+  x <- gsub(">","",x)
+  x <- gsub("not clear|Unknown|no information|U|notclear|noinformation","-1",x)
+  x <- gsub("Multiple","2",x)
+  x <- gsub(";","+",x)
+}
+
+x <- c()
+for(i in 1:1400){
+ x <- c(x,recodeshots(test$NumberOfShots[i]))
+}
+x[is.na(x)] <- "-1"
+
+x[x=="5+8+6+4+6"] <- 5+8+6+4+6
+x[x=="8+5"] <- 8+5
+x[x=="1+1"] <- 1+1
+x[x=="13+9"] <- 13+9
+x[x=="4+7"] <- 4+7
+x[x=="0+2+0"] <- 2
+x[x=="13+4"] <- 13+4
+x[x=="4+1"] <- 5
+x[x=="1*"] <- 1
+x[x=="2+1+4"] <- 2+1+4
+x[x=="5+5+3"] <- 5+5+3
+x[x=="16+2+1+2"] <- 16+2+1+2
+x[x=="9+7+4+7+2+7+3"] <- 9+7+4+7+2+7+3
+x[x=="4+14+16"] <- 4+14+16
+x[x=="3+1"] <- 4
+x[x=="10+3+2+2"] <- 10+3+2+2
+x[x=="16+16+2+12"] <- 16+16+2+12
+x[x=="4+14+16"] <- 4+14+16 
+x[x=="10+3+2+2"] <- 10+3+2+2
+x[x=="16+16+2+12"] <- 16+16+2+12
+x[x=="1+4"] <- 1+4
+x[x=="5+4"] <- 5+4
+x[x=="5+5"] <- 5+5
+x[x=="5+8+6"] <- 5+8+6
+x[x=="8+2"] <- 8+2
+x[x=="10+3"] <- 10+3
+x[x=="9+9+1"] <- 9+9+1
+x[x=="4+14+16"] <- 4+14+16
+x[x=="16+1+25+10+16+16"] <- 16+1+25+10+16+16
+x[x=="2+3"] <- 2+3
+x[x=="4+14+16"] <- 4+14+16
+x[x=="6+5"] <- 6+5
+x[x=="9+5+4"] <- 9+5+4
+
+nas <- which(is.na(as.numeric(x)))
+for(i in nas){
+  print(x[i])
+}
+
+x[x=="3+8+8"] <- 3+8+8
+x[x=="1+3"] <- 1+3
+x[x=="3+4+1"] <- 3+4+1
+x[x=="1+2"] <- 1+2
+x[x=="16+9+12"] <- 16+9+12
+x[x=="5+1"] <- 5+1
+test$NumberOfShots <- as.numeric(x)
+which(is.na(test$NumberOfShots))
+```
+
+```{r}
+
+#Code for cleaning SubjectAge
+test$SubjectAge[test$SubjectAge == "U"] <- 0
+test$SubjectAge[is.na(test$SubjectAge)] <- 0
+for(i in 1:1400){
+  if(test$SubjectAge[i] == "0-19"){
+    test$SubjectAge[i]  <- 19
+  }
+  if(test$SubjectAge[i] =="20-29"){
+    test$SubjectAge[i]  <- 29
+  }
+  if(test$SubjectAge[i] =="21-23"){
+    test$SubjectAge[i]  <- 29
+  }
+  if(test$SubjectAge[i] =="30-39"){
+    test$SubjectAge[i]  <- 39
+  }
+  if(test$SubjectAge[i] =="40-49"){
+    test$SubjectAge[i]  <- 49
+  }
+  if(test$SubjectAge[i] =="50-59"){
+    test$SubjectAge[i]  <- 59
+  }
+  if(test$SubjectAge[i] =="60-69"){
+    test$SubjectAge[i]  <- 69
+  }
+  if(test$SubjectAge[i] =="UNKNOWN"){
+    test$SubjectAge[i]  <- 0
+  }
+  if(test$SubjectAge[i] =="Juvenile"){
+    test$SubjectAge[i]  <- 19
+  }
+  if(test$SubjectAge[i] =="N/A"){
+    test$SubjectAge[i]  <- 0
+  }
+}
+test$SubjectAge <- as.numeric(test$SubjectAge)
+for(i in 1: 1400){
+  if(test$SubjectAge[i] <=19 && test$SubjectAge[i] >0){
+    test$SubjectAge[i] <- "0-19"
+  }
+  if(test$SubjectAge[i] == 4){
+    test$SubjectAge[i] <- "0-19"
+  }
+  if(test$SubjectAge[i] <=29 && test$SubjectAge[i] >=20){
+    test$SubjectAge[i] <- "20-29"
+  }
+  if(test$SubjectAge[i] <=39 && test$SubjectAge[i] >=30){
+    test$SubjectAge[i] <- "30-39"
+  }
+  if(test$SubjectAge[i] <=49 && test$SubjectAge[i] >=40){
+    test$SubjectAge[i] <- "40-49"
+  }
+  if(test$SubjectAge[i] <=59 && test$SubjectAge[i] >=50){
+    test$SubjectAge[i] <- "50-59"
+  }
+  if(test$SubjectAge[i] <=69 && test$SubjectAge[i] >=60){
+    test$SubjectAge[i] <- "60-69"
+  }
+  if(test$SubjectAge[i] >70){
+    test$SubjectAge[i] <- "70-79"
+  }
+  if(test$SubjectAge[i] ==70){
+    test$SubjectAge[i] <- "70-79"
+  }
+}
+test$SubjectAge <- as.factor(test$SubjectAge)
+summary(test$SubjectAge)
+
+```
+
+
+```{r}
+#Recode for SubjectGender
+for(i in 1:1400){
+  if(test$SubjectGender[i] == "N/A"){
+    test$SubjectGender[i] <- "U"
+  }
+}
+test$SubjectGender <- as.factor(test$SubjectGender)
+summary(factor(as.character(test$SubjectGender)))
+
+test$SubjectGender[test$SubjectGender=="M;U"] <-"M"
+```
+
+```{r}
+#Clean for SubjectRace
+for(i in 1:1400){
+  if(is.na(test$SubjectRace[i])){
+    test$SubjectRace[i] <- "U"
+  }
+}
+test$SubjectRace <- as.factor(test$SubjectRace)
+summary(test$SubjectRace)
+```
+
+```{r}
+#Clean for SubjectArmed
+for(i in 1:1400){
+  if(is.na(test$SubjectArmed[i])){
+    test$SubjectArmed[i] <- "U"
+  }
+}
+test$SubjectArmed <- as.factor(test$SubjectArmed)
+summary(test$SubjectArmed)
+```
+
+```{r}
+#clean for officer race
+recodeofficerRace<-function(x){
+  x<-gsub("WHITE","W",x)
+  x<-gsub("NA","U",x)
+  x<-gsub("Unknown","U",x)
+  x<-gsub(";","",x)
+  x<-gsub("BLACK","B",x)
+  x<-gsub("0","U",x)
+  x<-gsub("W/ H","H",x)
+  x<-gsub("A/PI","A",x)
+  x<-gsub("A/W","A",x)
+  x<-gsub("AI/AN","A",x)
+  if(lengths(regmatches(x, gregexpr("W", x)))>=length(x)/2){
+    x <- "W"  
+    }else if(lengths(regmatches(x, gregexpr("B", x)))>=length(x)/2){
+    x <- "B"
+  }else if(lengths(regmatches(x, gregexpr("A", x)))>=length(x)/2){
+    x <- "A"
+  }else if(lengths(regmatches(x, gregexpr("L", x)))>=length(x)/2){
+    x <- "L"
+  }else if(lengths(regmatches(x, gregexpr("H", x)))>=length(x)/2){
+    x <- "H"
+  }
+  else{
+    x <- "U"
+  }
+  return(x)
+}
+
+x<- c()
+for(i in 1:1400){
+ x <- c(x,recodeofficerRace(test$OfficerRace[i]))
+}
+test$OfficerRace <- x
+summary(as.factor(test$OfficerRace))
+
+
+```
+
+```{r}
+#Recode for NumberOfOfficers
+
+for(i in 1:1400){
+  if(is.na(test$NumberOfOfficers[i])){
+    test$NumberOfOfficers[i] <- "-1"
+  }
+}
+
+test$NumberOfOfficers <- as.factor(test$NumberOfOfficers)
+summary(test$NumberOfOfficers)
+test$NumberOfOfficers[test$NumberOfOfficers=="12"] <- "11"
+test$NumberOfOfficers[test$NumberOfOfficers=="16"] <- "11"
+test$NumberOfOfficers[test$NumberOfOfficers=="23"] <- "11"
+test$NumberOfOfficers <- factor(as.character(test$NumberOfOfficers))
+```
+
+```{r}
+test$NatureOfStop <- as.factor(tolower(test$NatureOfStop))
+
+test$NatureOfStop[grep("drug", test$NatureOfStop)] <- "drugs"
+test$NatureOfStop[grep("susp", test$NatureOfStop)] <-"suspect"
+test$NatureOfStop[grep("vehi", test$NatureOfStop)] <-"traffic"
+test$NatureOfStop[grep("traff", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("auto", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("rac", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("rob", test$NatureOfStop)] <- "robbery"
+test$NatureOfStop[grep("assault", test$NatureOfStop)] <-"assault"
+test$NatureOfStop[grep("sto", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("shoot", test$NatureOfStop)]  <- "shooting"
+test$NatureOfStop[grep("shot", test$NatureOfStop)] <-"shooting"
+
+test$NatureOfStop[grep("dist", test$NatureOfStop)] <-"disturbance"
+test$NatureOfStop[grep("car", test$NatureOfStop)] <-"traffic"
+test$NatureOfStop[grep("drive", test$NatureOfStop)] <-"traffic"
+test$NatureOfStop[grep("plat", test$NatureOfStop)] <-"traffic"
+test$NatureOfStop[grep("hit", test$NatureOfStop)] <-"traffic"
+test$NatureOfStop[grep("shop", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("inva", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("sui", test$NatureOfStop)] <- "suicide"
+test$NatureOfStop[grep("ment", test$NatureOfStop)] <- "mental health"
+test$NatureOfStop[grep("host", test$NatureOfStop)] <- "hostage situation"
+test$NatureOfStop[grep("kid", test$NatureOfStop)] <- "hostage situation"
+
+test$NatureOfStop[grep("warr", test$NatureOfStop)] <- "warrant"
+test$NatureOfStop[grep("arm", test$NatureOfStop)] <- "weapons posession"
+test$NatureOfStop[grep("wea", test$NatureOfStop)] <- "weapons posession"
+test$NatureOfStop[grep("tran", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("road", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("homi", test$NatureOfStop)] <- "homicide"
+
+test$NatureOfStop[grep("invest", test$NatureOfStop)] <- "investigation"
+test$NatureOfStop[grep("call", test$NatureOfStop)]  <-"call for service"
+test$NatureOfStop[grep("tire", test$NatureOfStop)]  <-"traffic"
+test$NatureOfStop[grep("bolo", test$NatureOfStop)]  <-"bolo"
+test$NatureOfStop[grep("vio", test$NatureOfStop)] <-"domestic violence"
+test$NatureOfStop[is.na(test$NatureOfStop)] <- "unknown"
+test$NatureOfStop[grep("bat", test$NatureOfStop)] <-"battery"
+test$NatureOfStop[grep("stab", test$NatureOfStop)] <-"stabbing"
+test$NatureOfStop[grep("duty", test$NatureOfStop)] <-"off-duty"
+test$NatureOfStop[grep("theft", test$NatureOfStop)] <-"burglary"
+test$NatureOfStop[grep("larceny", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("burglary", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("fight", test$NatureOfStop)] <- "fight"
+test$NatureOfStop[grep("gun", test$NatureOfStop)] <- "weapons posession"
+test$NatureOfStop[grep("property", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("pedestrian", test$NatureOfStop)] <- "traffic"
+test$NatureOfStop[grep("party", test$NatureOfStop)] <- "party"
+test$NatureOfStop[grep("100", test$NatureOfStop)] <- "op 100"
+test$NatureOfStop[grep("tres", test$NatureOfStop)] <- "burglary"
+test$NatureOfStop[grep("dispute", test$NatureOfStop)] <- "domestic dispute"
+test$NatureOfStop[grep("gang", test$NatureOfStop)] <- "gang activity"
+test$NatureOfStop[grep("hang", test$NatureOfStop)] <- "call for service"
+
+test$NatureOfStop <- as.character(test$NatureOfStop)
+test$NatureOfStop <- as.factor(tolower(test$NatureOfStop))
+levels(test$NatureOfStop)
+summary(test$NatureOfStop)
+
+```
+
+
+```{r}
+#detroit <- project[test$City=="Detroit",]
+#rows <- (test$City=="Detroit")
+#testleft <- test[!rows,]
+#summary(factor(testleft$Department))
+probs<-predict(m1,test,type="response")
+pred <- rep("No",1400)
+pred[probs>0.5] <- "Yes"
+
+test$Fatal <- pred
+```
+
+```{r}
+drows <- which(rows==TRUE)
+Fatal <- rep("No",1400)
+Fatal[1:433] <- pred[1:433]
+Fatal[434:475] <- "No"
+Fatal[476:1400] <- pred[434:1358]
+
+test$Fatal <- Fatal
+
+test$agefatal <-test$Fatal
+
+#summary(test$SubjectAge)
+
+test$agefatal[grep("50-59", test$SubjectAge)] <- "Yes"
+test$agefatal[grep("60-69", test$SubjectAge)] <- "Yes"
+test$agefatal[grep("70-79", test$SubjectAge)] <- "Yes"
+
+sum(test$agefatal != test$Fatal)
+#submission <- data.frame(id=project$id,Fatal=pred)
+
+test$agefatal2 <- test$agefatal
+
+test$agefatal2[grep("fatal", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("dead", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("death", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("died", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("demise", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("kill", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("doa", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("decease", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("suicide", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("succumb", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("pronounce", project$FullNarrative)] <- "Yes"
+test$agefatal2[grep("unloaded", project$FullNarrative)] <- "Yes"
+
+test$agefatal2[grep("non-fatal", project$FullNarrative)] <- "No"
+
+test$agefatal2[grep("fatal", project$Notes)] <- "Yes"
+test$agefatal2[grep("dead", project$Notes)] <- "Yes"
+test$agefatal2[grep("death", project$Notes)] <- "Yes"
+test$agefatal2[grep("died", project$Notes)] <- "Yes"
+test$agefatal2[grep("demise", project$Notes)] <- "Yes"
+test$agefatal2[grep("kill", project$Notes)] <- "Yes"
+test$agefatal2[grep("doa", project$Notes)] <- "Yes"
+test$agefatal2[grep("decease", project$Notes)] <- "Yes"
+
+
+test$agefatal2[grep("non-fatal", project$Notes)] <- "No"
+test$agefatal2[grep("no hit", project$Notes)] <- "No"
+
+test$agefatal2[grep("potential suicide", project$Notes)] <- "No"
+
+sum(test$agefatal != test$agefatal2)
+sum(test$agefatal2 != test$Fatal)
+
+submission <- data.frame(id=project$id, Fatal=test$agefatal2)
+write.csv(submission, "sub6.8.2.csv")
+```
+
+```{r}
+#Narrative
+test$narrativefatal <- test$Fatal
+project$FullNarrative <- tolower(project$FullNarrative)
+
+test$narrativefatal[grep("fatal", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("dead", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("death", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("died", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("demise", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("kill", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("doa", project$FullNarrative)] <- "Yes"
+test$narrativefatal[grep("decease", project$FullNarrative)] <- "Yes"
+
+test$narrativefatal[grep("non-fatal", project$FullNarrative)] <- "No"
+
+sum(test$Fatal!=test$narrativefatal)
+#submission <- data.frame(id=project$id,Fatal=test$narrativefatal)
+#write.csv(submission,"sub6.5.csv")
+```
+
+```{r}
+#Notes
+project$Notes <- tolower(project$Notes)
+
+test$notesfatal <- test$narrativefatal
+
+test$notesfatal[grep("fatal", project$Notes)] <- "Yes"
+test$notesfatal[grep("dead", project$Notes)] <- "Yes"
+test$notesfatal[grep("death", project$Notes)] <- "Yes"
+test$notesfatal[grep("died", project$Notes)] <- "Yes"
+test$notesfatal[grep("demise", project$Notes)] <- "Yes"
+test$notesfatal[grep("kill", project$Notes)] <- "Yes"
+test$notesfatal[grep("doa", project$Notes)] <- "Yes"
+test$notesfatal[grep("decease", project$Notes)] <- "Yes"
+
+
+test$notesfatal[grep("non-fatal", project$Notes)] <- "No"
+test$notesfatal[grep("no hit", project$Notes)] <- "No"
+
+
+sum(test$narrativefatal!=test$notesfatal)
+#submission <- data.frame(id=project$id,Fatal=test$notesfatal)
+#write.csv(submission,"sub6.5.2.csv")
+```
+
+
+```{r}
+#additional words in narrative
+
+test$narrativefatal2 <- test$notesfatal
+
+test$narrativefatal2[grep("suicide", project$FullNarrative)] <- "Yes"
+test$narrativefatal2[grep("succumb", project$FullNarrative)] <- "Yes"
+test$narrativefatal2[grep("pronounce", project$FullNarrative)] <- "Yes"
+test$narrativefatal2[grep("unloaded", project$FullNarrative)] <- "Yes"
+
+
+sum(test$notesfatal!=test$narrativefatal2)
+
+#submission <- data.frame(id=project$id,Fatal=test$narrativefatal2)
+#write.csv(submission,"sub6.6.1.csv")
+
+```
+
+```{r}
+#additional words in notes  
+
+test$notesfatal2 <- test$narrativefatal2
+
+test$notesfatal2[grep("suicide", project$Notes)] <- "Yes"
+test$notesfatal2[grep("succumb", project$Notes)] <- "Yes"
+test$notesfatal2[grep("pronounce", project$Notes)] <- "Yes"
+test$notesfatal2[grep("unloaded", project$Notes)] <- "Yes"
+
+test$notesfatal2[grep("potential suicide", project$Notes)] <- "No"
+
+sum(test$notesfatal2!=test$narrativefatal2)
+
+```
+
+```{r}
+#website
+library(readr)
+httpright <- read_csv("~/Desktop/httpright.csv")
+sheet <- httpright[,-1]
+
+#test$httpfatal <- pred
+test$httpfatal <- test$Fatal
+
+https <- c()
+https <- grep("http", project$FullNarrative)
+
+for(i in https){
+  
+  test$httpfatal[i] <- sheet$Fatal[i]
+}
+
+#sum(test$notesfatal2!=test$httpfatal)
+
+test$httpfatal[grep("wound", project$FullNarrative)] <- "No"
+test$httpfatal[grep("injure", project$FullNarrative)] <- "No"
+
+
+test$httpfatal[grep("fatal", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("dead", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("death", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("died", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("demise", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("kill", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("doa", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("decease", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("suicide", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("succumb", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("pronounce", project$FullNarrative)] <- "Yes"
+test$httpfatal[grep("unloaded", project$FullNarrative)] <- "Yes"
+
+test$httpfatal[grep("non-fatal", project$FullNarrative)] <- "No"
+
+test$httpfatal[grep("injure", project$Notes)] <- "No"
+test$httpfatal[grep("wound", project$Notes)] <- "No"
+
+test$httpfatal[grep("fatal", project$Notes)] <- "Yes"
+test$httpfatal[grep("dead", project$Notes)] <- "Yes"
+test$httpfatal[grep("death", project$Notes)] <- "Yes"
+test$httpfatal[grep("died", project$Notes)] <- "Yes"
+test$httpfatal[grep("demise", project$Notes)] <- "Yes"
+test$httpfatal[grep("kill", project$Notes)] <- "Yes"
+test$httpfatal[grep("doa", project$Notes)] <- "Yes"
+test$httpfatal[grep("decease", project$Notes)] <- "Yes"
+
+
+test$httpfatal[grep("non-fatal", project$Notes)] <- "No"
+test$httpfatal[grep("no hit", project$Notes)] <- "No"
+
+test$httpfatal[grep("potential suicide", project$Notes)] <- "No"
+
+sum(test$Fatal !=test$httpfatal)
+
+submission <- data.frame(id=project$id,Fatal=test$httpfatal)
+write.csv(submission,"sub6.9.2.csv")
+
+test$httpfatal[808]
+```
+
+
+```{r}
+test$httpfatal[1224] <- "No"
+test$httpfatal[1286] <- "No"
+test$httpfatal[1354] <- "Yes"
+test$httpfatal[1361] <- "Yes"
+test$httpfatal[84] <- "No"
+test$httpfatal[131] <- "Yes"
+test$httpfatal[132] <- "Yes"
+test$httpfatal[134] <- "Yes"
+test$httpfatal[145] <- "Yes"
+test$httpfatal[150] <- "Yes"
+test$httpfatal[195] <- "Yes"
+test$httpfatal[258] <- "Yes"
+```
+
+```{r}
+test$agefatal <-test$httpfatal
+
+#summary(test$SubjectAge)
+
+test$agefatal[grep("50-59", test$SubjectAge)] <- "Yes"
+test$agefatal[grep("60-69", test$SubjectAge)] <- "Yes"
+test$agefatal[grep("70-79", test$SubjectAge)] <- "Yes"
+
+sum(test$agefatal != sub6_7_2$Fatal)
+
+submission <- data.frame(id=project$id,Fatal=test$agefatal)
+#write.csv(submission, "sub6.8.1.csv")
+
+
+```
+
+```{r}
+library(readr)
+sub6_7_2 <- read_csv("~/Desktop/sub6.7.2.csv")
+sub6_6_2 <- read_csv("~/Desktop/101C project/sub6.6.2.csv")
+sub6_9_1 <- read_csv("~/Desktop/sub6.9.1.csv")
+
+sum(sheet$Fatal!= sub6_9_1$Fatal)
+
+test$agefatal2 <- sub6_6_2$Fatal
+
+test$agefatal2[grep("50-59", test$SubjectAge)] <- "Yes"
+test$agefatal2[grep("60-69", test$SubjectAge)] <- "Yes"
+test$agefatal2[grep("70-79", test$SubjectAge)] <- "Yes"
+
+sum(test$agefatal2 != sub6_6_2$Fatal)
+
+
+submission <- data.frame(id=project$id, test)
+
+submission <- data.frame(id=project$id, Fatal=submission$httpfatal)
+write.csv(submission,"sub6.8.3.csv")
+```
